@@ -13,9 +13,9 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['subir']) && isDocente())
     if(!is_dir(UPLOAD_PDF)) mkdir(UPLOAD_PDF,0755,true);
 
     if($titulo && isset($_FILES['archivo']) && $_FILES['archivo']['error']===0){
-        $ext=strtolower(pathinfo($_FILES['archivo']['name'],PATHINFO_EXTENSION));
-        $allowed=['pdf','zip','png','jpg','jpeg','gif','mp4','docx','pptx','xlsx'];
-        if(in_array($ext,$allowed)){
+        [$okUpload,$uploadInfo]=validarUpload($_FILES['archivo'], ['pdf','zip','png','jpg','jpeg','gif','webp','mp4','docx','pptx','xlsx'], 25*1024*1024);
+        if($okUpload){
+            $ext=$uploadInfo;
             $fname=uniqid('biffi_').'.'.$ext;
             $dest=UPLOAD_PDF.$fname;
             if(move_uploaded_file($_FILES['archivo']['tmp_name'],$dest)){
@@ -30,7 +30,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['subir']) && isDocente())
             } else {
                 $err='Error al guardar el archivo. Verifica permisos de la carpeta uploads/pdfs/';
             }
-        } else $err='Tipo de archivo no permitido. Usa: PDF, ZIP, imágenes, DOC, PPT.';
+        } else $err=$uploadInfo;
     } elseif($titulo && isset($_POST['url']) && trim($_POST['url'])){
         $pdo->prepare("INSERT INTO recursos(titulo,descripcion,tipo,archivo,subido_por,visible) VALUES(?,?,?,?,?,1)")
             ->execute([$titulo,$desc,'enlace',trim($_POST['url']),$_SESSION['user_id']]);
@@ -42,8 +42,8 @@ if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['subir']) && isDocente())
 }
 
 // Eliminar recurso
-if(isset($_GET['del']) && is_numeric($_GET['del']) && isDocente()){
-    $rid=intval($_GET['del']);
+if($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['del_recurso']) && is_numeric($_POST['del_recurso']) && isDocente()){
+    $rid=intval($_POST['del_recurso']);
     $r=$pdo->prepare("SELECT archivo FROM recursos WHERE id=?");
     $r->execute([$rid]); $rec=$r->fetch();
     if($rec && file_exists(__DIR__.'/'.$rec['archivo'])) @unlink(__DIR__.'/'.$rec['archivo']);
@@ -228,8 +228,10 @@ require_once 'includes/header.php';
         <a href="<?=$url?>" target="_blank" onclick="fetch('biblioteca.php?dl=<?=$r['id']?>')"
            class="btn btn-v btn-sm">⬇️ Descargar</a>
         <?php if(isDocente()): ?>
-        <a href="biblioteca.php?del=<?=$r['id']?>" class="btn btn-red btn-sm"
-           onclick="return confirm('¿Eliminar este recurso?')">🗑️</a>
+        <form method="POST" style="display:inline" onsubmit="return confirm('¿Eliminar este recurso?')">
+          <input type="hidden" name="del_recurso" value="<?=$r['id']?>">
+          <button type="submit" class="btn btn-red btn-sm">🗑️</button>
+        </form>
         <?php endif ?>
       </div>
     </div>

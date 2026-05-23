@@ -105,8 +105,8 @@ if(isset($_POST['toggle_sec'])){
 if(isset($_POST['crear_pregunta'])){
     $img='';
     if(isset($_FILES['img_pregunta'])&&$_FILES['img_pregunta']['error']===0){
-        $ext=strtolower(pathinfo($_FILES['img_pregunta']['name'],PATHINFO_EXTENSION));
-        if(in_array($ext,['jpg','jpeg','png','gif','webp'])){ $f='q_'.uniqid().'.'.$ext; if(move_uploaded_file($_FILES['img_pregunta']['tmp_name'],UPLOAD_IMG.$f)) $img='uploads/imgs/'.$f; }
+        [$okUpload,$uploadInfo]=validarUpload($_FILES['img_pregunta'], ['jpg','jpeg','png','gif','webp'], 5*1024*1024);
+        if($okUpload){ $ext=$uploadInfo; $f='q_'.uniqid().'.'.$ext; if(move_uploaded_file($_FILES['img_pregunta']['tmp_name'],UPLOAD_IMG.$f)) $img='uploads/imgs/'.$f; }
     }
     $pdo->prepare("INSERT INTO preguntas(pregunta,imagen_url,op1,op2,op3,op4,correcta,nivel,tema,explicacion) VALUES(?,?,?,?,?,?,?,?,?,?)")
         ->execute([trim($_POST['pregunta']),$img,trim($_POST['op1']),trim($_POST['op2']),trim($_POST['op3']),trim($_POST['op4']??''),trim($_POST['correcta']),$_POST['nivel'],trim($_POST['tema']),trim($_POST['explicacion']??'')]);

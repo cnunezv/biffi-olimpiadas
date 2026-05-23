@@ -5,9 +5,19 @@ $error='';
 if($_SERVER['REQUEST_METHOD']==='POST'){
     $u=trim($_POST['usuario']??''); $p=trim($_POST['contrasena']??'');
     if($u&&$p){
+        $key='login_'.$u;
+        $attempt=$_SESSION[$key]??['count'=>0,'until'=>0];
+        if(($attempt['until']??0)>time()){
+            $error='Demasiados intentos. Espera unos minutos e intenta de nuevo.';
+        } else {
         $s=$pdo->prepare("SELECT * FROM usuarios WHERE usuario=? AND activo=1");
         $s->execute([$u]); $row=$s->fetch();
+        $attempt['count']=(int)($attempt['count']??0)+1;
+        $attempt['until']=$attempt['count']>=5 ? time()+300 : 0;
+        $_SESSION[$key]=$attempt;
         if($row && password_verify($p,$row['contrasena'])){
+            unset($_SESSION[$key]);
+            session_regenerate_id(true);
             $_SESSION['user_id']=$row['id']; $_SESSION['nombre']=$row['nombre'];
             $_SESSION['apellido']=$row['apellido']; $_SESSION['usuario']=$row['usuario'];
 	            $_SESSION['rol']=$row['rol']; $_SESSION['grado']=$row['grado']??null;
@@ -16,6 +26,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
             $_SESSION['institucion_id']=$row['institucion_id']??null;
             header('Location: dashboard.php'); exit;
         } else $error='Usuario o contraseña incorrectos.';
+        }
     } else $error='Completa todos los campos.';
 }
 ?><!DOCTYPE html>

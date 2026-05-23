@@ -34,15 +34,16 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
             $err='Completa los campos obligatorios (pregunta, opciones A-B-C y respuesta correcta).';
         } else {
             if(isset($_FILES['imagen'])&&$_FILES['imagen']['error']===0){
-                $ext=strtolower(pathinfo($_FILES['imagen']['name'],PATHINFO_EXTENSION));
-                if(in_array($ext,['jpg','jpeg','png','gif','webp','svg'])){
+                [$okUpload,$uploadInfo]=validarUpload($_FILES['imagen'], ['jpg','jpeg','png','gif','webp'], 5*1024*1024);
+                if($okUpload){
+                    $ext=$uploadInfo;
                     $fname='q_'.uniqid().'.'.$ext;
                     if(!is_dir(UPLOAD_IMG)) mkdir(UPLOAD_IMG,0755,true);
                     if(move_uploaded_file($_FILES['imagen']['tmp_name'],UPLOAD_IMG.$fname)){
                         if($img_url&&file_exists(__DIR__.'/'.$img_url)) @unlink(__DIR__.'/'.$img_url);
                         $img_url='uploads/imgs/'.$fname;
                     }
-                } else $err='Imagen no válida. Usa JPG, PNG, GIF, WEBP o SVG.';
+                } else $err=$uploadInfo;
             }
             if(!$err){
                 if($id>0){
@@ -409,7 +410,7 @@ input:checked+.swsl::before{transform:translateX(22px)}
 
       <!-- IMAGEN -->
       <div class="efrow1">
-        <label class="ef-label">Imagen <em>(opcional — JPG, PNG, SVG, GIF)</em></label>
+        <label class="ef-label">Imagen <em>(opcional — JPG, PNG, GIF, WEBP)</em></label>
         <?php if(!empty($edit_pregunta['imagen_url'])): ?>
         <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f1f8e9;border:1.5px solid #a5d6a7;border-radius:9px;margin-bottom:8px">
           <img src="<?=sanitize(SITE_URL.'/'.$edit_pregunta['imagen_url'])?>" style="height:50px;object-fit:contain;border-radius:5px;border:1px solid #ccc">

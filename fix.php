@@ -1,5 +1,11 @@
 <?php
 require_once 'includes/config.php';
+$host = $_SERVER['HTTP_HOST'] ?? '';
+if(!in_array($host, ['localhost','127.0.0.1'], true)){
+  http_response_code(404);
+  exit;
+}
+requireAdmin();
 echo "<style>body{font-family:sans-serif;max-width:700px;margin:50px auto;padding:20px;background:#fdf5f7}
 h2{color:#7C1F30}.ok{background:#e8f5e9;border:2px solid #4caf50;border-radius:9px;padding:12px 16px;margin:8px 0;font-size:13.5px}
 .err{background:#fde8e8;border:2px solid #e53935;border-radius:9px;padding:12px 16px;margin:8px 0;font-size:13.5px}

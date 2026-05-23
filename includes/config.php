@@ -1,10 +1,10 @@
 <?php
-define('DB_HOST','localhost');
-define('DB_USER','root');
-define('DB_PASS','');
-define('DB_NAME','olimpiadas_pro');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: 'olimpiadas_pro');
 define('SITE_NAME','Biffi Olimpiadas');
-define('SITE_URL','http://localhost/biffi-olimpiadas');
+define('SITE_URL', getenv('SITE_URL') ?: 'http://localhost/biffi-olimpiadas');
 define('UPLOAD_PDF', __DIR__.'/../uploads/pdfs/');
 define('UPLOAD_IMG', __DIR__.'/../uploads/imgs/');
 
@@ -33,6 +33,48 @@ if(session_status() === PHP_SESSION_NONE){
     session_start();
 }
 
+if(empty($_SESSION['csrf_token'])){
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+function csrfToken(): string {
+    return $_SESSION['csrf_token'] ?? '';
+}
+
+function csrfField(): string {
+    return '<input type="hidden" name="csrf_token" value="'.htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8').'">';
+}
+
+function verificarCsrf(): void {
+    if(($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') return;
+    $token = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if(!$token || !hash_equals(csrfToken(), (string)$token)){
+        http_response_code(403);
+        exit('Solicitud no valida. Recarga la pagina e intenta nuevamente.');
+    }
+}
+
+function inyectarCsrfEnForms(string $html): string {
+    if(stripos($html, '<form') === false) return $html;
+    $field = csrfField();
+    return preg_replace_callback('/<form\b([^>]*)>/i', function($m) use ($field){
+        $attrs = $m[1];
+        if(stripos($attrs, 'method="POST"') === false
+            && stripos($attrs, "method='POST'") === false
+            && stripos($attrs, 'method=POST') === false
+            && stripos($attrs, 'method="post"') === false
+            && stripos($attrs, "method='post'") === false
+            && stripos($attrs, 'method=post') === false){
+            return $m[0];
+        }
+        if(stripos($m[0], 'csrf_token') !== false) return $m[0];
+        return $m[0].$field;
+    }, $html);
+}
+
+verificarCsrf();
+ob_start('inyectarCsrfEnForms');
+
 function isLogged()  { return !empty($_SESSION['user_id']); }
 function isAdmin()   { return ($_SESSION['rol'] ?? '') === 'admin'; }
 function isDocente() { return in_array($_SESSION['rol'] ?? '', ['admin','docente']); }
@@ -48,6 +90,41 @@ function noMsgLeidos($pdo){
 }
 
 function sanitize($str){ return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8'); }
+
+function validarUpload(array $file, array $extPermitidas, int $maxBytes=10485760): array {
+    if(($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) return [false, 'Error al recibir el archivo.'];
+    if(($file['size'] ?? 0) <= 0 || $file['size'] > $maxBytes) return [false, 'El archivo supera el tamaÃ±o permitido.'];
+
+    $ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+    if(!$ext || !in_array($ext, $extPermitidas, true)) return [false, 'Tipo de archivo no permitido.'];
+
+    $mimePermitidos = [
+        'pdf'=>['application/pdf'],
+        'zip'=>['application/zip','application/x-zip-compressed','application/octet-stream'],
+        'png'=>['image/png'],
+        'jpg'=>['image/jpeg'],
+        'jpeg'=>['image/jpeg'],
+        'gif'=>['image/gif'],
+        'webp'=>['image/webp'],
+        'mp4'=>['video/mp4','application/octet-stream'],
+        'docx'=>['application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/zip','application/octet-stream'],
+        'pptx'=>['application/vnd.openxmlformats-officedocument.presentationml.presentation','application/zip','application/octet-stream'],
+        'xlsx'=>['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/zip','application/octet-stream'],
+    ];
+
+    $mime = '';
+    if(function_exists('finfo_open')){
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        if($finfo){
+            $mime = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+        }
+    }
+    if($mime && isset($mimePermitidos[$ext]) && !in_array($mime, $mimePermitidos[$ext], true)){
+        return [false, 'El contenido del archivo no coincide con su extensiÃ³n.'];
+    }
+    return [true, $ext];
+}
 
 // ── GRUPOS POR GRADO ──────────────────────────────────────────
 // Devuelve el grupo al que pertenece un grado escolar
