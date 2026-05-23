@@ -30,7 +30,7 @@ static/uploads/*
 
 # Duplicated legacy exports / local backups
 biffi-olimpiadas/
-{includes,uploads/
+{includes,admin,assets}/
 *.bak
 *.tmp
 
