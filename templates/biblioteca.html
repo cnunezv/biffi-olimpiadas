@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Biblioteca | Biffi Olimpiadas{% endblock %}
+{% block content %}
+<section class="row g-4">
+  <div class="col-lg-4">
+    <div class="card biffi-card h-100">
+      <div class="card-body">
+        <h1 class="h4">Biblioteca</h1>
+        <form class="mb-4" method="get">
+          <div class="input-group">
+            <input class="form-control" name="q" value="{{ q }}" placeholder="Buscar por título o descripción">
+            <button class="btn btn-outline-secondary">Buscar</button>
+          </div>
+        </form>
+        {% if current_user.rol in ['admin', 'docente'] %}
+        <form method="post" enctype="multipart/form-data" class="vstack gap-3">
+          <input class="form-control" name="titulo" placeholder="Título" required>
+          <textarea class="form-control" name="descripcion" rows="3" placeholder="Descripción"></textarea>
+          <input class="form-control" type="file" name="archivo" required>
+          <button class="btn btn-biffi">Subir recurso</button>
+        </form>
+        {% else %}
+        <p class="text-muted mb-0">Puedes consultar y descargar recursos compartidos por docentes y coordinación.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="row g-4">
+      {% for recurso in recursos %}
+      <div class="col-md-6">
+        <div class="card biffi-card h-100">
+          <div class="card-body d-flex flex-column">
+            <span class="badge text-bg-light align-self-start mb-3">{{ recurso.tipo|upper }}</span>
+            <h2 class="h5">{{ recurso.titulo }}</h2>
+            <p class="text-muted flex-grow-1">{{ recurso.descripcion }}</p>
+            <div class="small text-muted mb-3">Descargas: {{ recurso.descargas }}</div>
+            <a class="btn btn-biffi" href="{{ url_for('biblioteca.download', recurso_id=recurso.id) }}">Descargar</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-muted">No hay recursos cargados todavía.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

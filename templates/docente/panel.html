@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Panel Docente | Biffi Olimpiadas{% endblock %}
+{% block content %}
+<section class="mb-4">
+  <span class="eyebrow">Seguimiento académico</span>
+  <h1>Panel docente</h1>
+  <p class="text-muted">Rankings, estadísticas y resultados filtrados por alcance de permisos.</p>
+</section>
+
+<section class="row g-4">
+  <div class="col-lg-5">
+    <div class="card biffi-card mb-4">
+      <div class="card-body">
+        <h2 class="h4">Ranking por institución</h2>
+        {% for inst in ranking_instituciones %}
+        <div class="rank-row">
+          <div class="d-flex align-items-center gap-3">
+            <span class="rank-medal">{{ ['🥇','🥈','🥉'][loop.index0] if loop.index0 < 3 else loop.index }}</span>
+            <div>
+              <strong>{{ inst.nombre }}</strong>
+              <small class="d-block text-muted">{{ inst.participaciones }} participaciones</small>
+            </div>
+          </div>
+          <span>{{ '%.1f'|format((inst.promedio or 0) * 100) }}%</span>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Sin datos todavía.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h2 class="h4">Ranking individual</h2>
+        {% for usuario, aciertos, preguntas in ranking_individual %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <strong>{{ usuario.nombre_completo }}</strong>
+            <span>{{ aciertos }}/{{ preguntas }}</span>
+          </div>
+          <div class="progress mt-2">
+            <div class="progress-bar" style="width: {{ ((aciertos or 0) / (preguntas or 1) * 100)|round(0) }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h2 class="h4">Resultados</h2>
+        <form class="row g-2 mb-3">
+          <div class="col-md-3"><input class="form-control" name="q" value="{{ filtros.q }}" placeholder="Buscar"></div>
+          <div class="col-md-3"><input class="form-control" name="nivel" value="{{ filtros.nivel }}" placeholder="Nivel"></div>
+          <div class="col-md-3"><input class="form-control" name="grupo" value="{{ filtros.grupo }}" placeholder="Grupo"></div>
+          <div class="col-md-3"><button class="btn btn-outline-secondary w-100">Filtrar</button></div>
+        </form>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead><tr><th>Estudiante</th><th>Institución</th><th>Clave</th><th>Puntaje</th></tr></thead>
+            <tbody>
+              {% for item in tabla_resultados %}
+              <tr>
+                <td>{{ item.usuario.nombre_completo }}</td>
+                <td>{{ item.usuario.institucion.nombre }}</td>
+                <td>{{ item.nivel }}</td>
+                <td>{{ item.puntaje }}/{{ item.total }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="text-muted">No hay resultados para esos filtros.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

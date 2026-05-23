@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Resultados | Admin{% endblock %}
+{% block content %}
+<div class="card biffi-card">
+  <div class="card-body">
+    <h1 class="h4">Resultados globales</h1>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead><tr><th>Estudiante</th><th>Institución</th><th>Clave</th><th>Puntaje</th><th>Acción</th></tr></thead>
+        <tbody>
+          {% for item in registros %}
+          {% set parts = item.nivel.split('_') %}
+          <tr>
+            <td>{{ item.usuario.nombre_completo }}</td>
+            <td>{{ item.usuario.institucion.nombre }}</td>
+            <td>{{ item.nivel }}</td>
+            <td>{{ item.puntaje }}/{{ item.total }}</td>
+            <td>
+              {% if parts|length >= 3 %}
+              <a class="btn btn-sm btn-outline-danger" href="{{ url_for('admin.reset_intentos', usuario_id=item.usuario.id, tipo=parts[-1], grupo=parts[-2], nivel=parts[0]) }}">🔁 Resetear</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

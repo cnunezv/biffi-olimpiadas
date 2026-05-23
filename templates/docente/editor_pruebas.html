@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Editor de Pruebas | Biffi Olimpiadas{% endblock %}
+{% block content %}
+<section class="row g-4">
+  <div class="col-lg-5">
+    <div class="card biffi-card mb-4">
+      <div class="card-body">
+        <h1 class="h4">Nueva pregunta</h1>
+        <div class="latex-toolbar mb-3">
+          <button class="btn btn-sm btn-outline-secondary latex-insert" data-target="preguntaInput" data-snippet="\\frac{a}{b}">Fracción</button>
+          <button class="btn btn-sm btn-outline-secondary latex-insert" data-target="preguntaInput" data-snippet="\\sqrt{x}">Raíz</button>
+          <button class="btn btn-sm btn-outline-secondary latex-insert" data-target="preguntaInput" data-snippet="x^2">Potencia</button>
+          <button class="btn btn-sm btn-outline-secondary latex-insert" data-target="preguntaInput" data-snippet="\\int_a^b">Integral</button>
+          <button class="btn btn-sm btn-outline-secondary latex-insert" data-target="preguntaInput" data-snippet="\\alpha">Griega</button>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="vstack gap-3">
+          <textarea class="form-control math-live" id="preguntaInput" name="pregunta" rows="4" placeholder="Escribe la pregunta con soporte LaTeX" required></textarea>
+          <div class="math-preview" data-preview="preguntaInput"></div>
+          <input class="form-control" name="tema" placeholder="Tema" required>
+          <select class="form-select" name="tipo_prueba">{% for tipo in tipos %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}</select>
+          <select class="form-select" name="grupo_grado">{% for grupo in grupos %}<option value="{{ grupo }}">{{ grupo }}</option>{% endfor %}</select>
+          <select class="form-select" name="nivel">{% for nivel in niveles %}<option value="{{ nivel }}">{{ nivel }}</option>{% endfor %}</select>
+          <input class="form-control option-picker" name="op1" data-option="op1" placeholder="Opción 1" required>
+          <input class="form-control option-picker" name="op2" data-option="op2" placeholder="Opción 2" required>
+          <input class="form-control option-picker" name="op3" data-option="op3" placeholder="Opción 3" required>
+          <input class="form-control option-picker" name="op4" data-option="op4" placeholder="Opción 4" required>
+          <input type="hidden" name="correcta" value="op1" id="correctaInput">
+          <textarea class="form-control math-live" name="explicacion" rows="3" placeholder="Explicación"></textarea>
+          <input class="form-control" type="file" name="imagen" accept=".jpg,.jpeg,.png,.svg,.gif,.webp">
+          <small class="text-muted">Doble clic en una opción para marcarla como correcta.</small>
+          <button class="btn btn-biffi">Guardar pregunta</button>
+        </form>
+      </div>
+    </div>
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h2 class="h4">Configuración de pruebas</h2>
+        {% for config in configs %}
+        <form method="post" class="config-grid">
+          <input type="hidden" name="form_type" value="config">
+          <input type="hidden" name="config_id" value="{{ config.id }}">
+          <strong>{{ config.tipo_prueba }} · {{ config.grupo_grado }}</strong>
+          <input class="form-control" type="number" name="tiempo_limite_min" value="{{ config.tiempo_limite_min or '' }}" placeholder="Tiempo">
+          <input class="form-control" type="number" name="num_preguntas" value="{{ config.num_preguntas }}" placeholder="Preguntas">
+          <input class="form-control" type="number" name="max_intentos" value="{{ config.max_intentos }}" placeholder="Intentos">
+          <textarea class="form-control" name="instrucciones" rows="2">{{ config.instrucciones }}</textarea>
+          <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="habilitada" {% if config.habilitada %}checked{% endif %}><label class="form-check-label">Habilitada</label></div>
+          <button class="btn btn-sm btn-outline-secondary">Actualizar</button>
+        </form>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card biffi-card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h4 mb-0">Banco de preguntas</h2>
+          <form class="d-flex gap-2 flex-wrap">
+            <select class="form-select" name="grupo"><option value="">Grupo</option>{% for grupo in grupos %}<option value="{{ grupo }}" {% if filtros.grupo == grupo %}selected{% endif %}>{{ grupo }}</option>{% endfor %}</select>
+            <select class="form-select" name="tipo"><option value="">Tipo</option>{% for tipo in tipos %}<option value="{{ tipo }}" {% if filtros.tipo == tipo %}selected{% endif %}>{{ tipo }}</option>{% endfor %}</select>
+            <select class="form-select" name="nivel"><option value="">Nivel</option>{% for nivel in niveles %}<option value="{{ nivel }}" {% if filtros.nivel == nivel %}selected{% endif %}>{{ nivel }}</option>{% endfor %}</select>
+            <button class="btn btn-outline-secondary">Filtrar</button>
+          </form>
+        </div>
+        {% for pregunta in preguntas %}
+        <article class="question-bank-item">
+          <div class="d-flex justify-content-between gap-3 flex-wrap">
+            <div>
+              <strong>{{ pregunta.tema }}</strong>
+              <div class="small text-muted">{{ pregunta.tipo_prueba }} · {{ pregunta.grupo_grado }} · {{ pregunta.nivel }}</div>
+            </div>
+            <span class="badge text-bg-success">Correcta: {{ pregunta.correcta }}</span>
+          </div>
+          <p class="mt-3 mb-2">{{ pregunta.pregunta|safe }}</p>
+          <ol class="small mb-2">
+            <li>{{ pregunta.op1 }}</li>
+            <li>{{ pregunta.op2 }}</li>
+            <li>{{ pregunta.op3 }}</li>
+            <li>{{ pregunta.op4 }}</li>
+          </ol>
+          <small class="text-muted">{{ pregunta.explicacion }}</small>
+        </article>
+        {% else %}
+        <p class="text-muted mb-0">No hay preguntas para esos filtros.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

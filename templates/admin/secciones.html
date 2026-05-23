@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Secciones | Admin{% endblock %}
+{% block content %}
+<div class="card biffi-card">
+  <div class="card-body">
+    <h1 class="h4">Control de secciones</h1>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead><tr><th>Nombre</th><th>Etiqueta</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          {% for seccion in secciones %}
+          <tr>
+            <td>{{ seccion.nombre }}</td>
+            <td>{{ seccion.etiqueta }}</td>
+            <td>{{ 'Habilitada' if seccion.habilitada else 'Deshabilitada' }}</td>
+            <td>
+              <form method="post" class="d-flex gap-2 justify-content-end">
+                <input type="hidden" name="seccion_id" value="{{ seccion.id }}">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" name="habilitada" {% if seccion.habilitada %}checked{% endif %}>
+                </div>
+                <button class="btn btn-sm btn-biffi">Guardar</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

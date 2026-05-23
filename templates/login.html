@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Ingreso | Biffi Olimpiadas{% endblock %}
+{% block content %}
+<section class="row justify-content-center">
+  <div class="col-12">
+    <div class="hero-panel hero-login p-4 p-lg-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <span class="eyebrow">Colegio Biffi · Cartagena</span>
+          <h1>Bienvenido a las XVIII Olimpiadas de Matemáticas 2026</h1>
+          <p class="lead">Una plataforma para competir, entrenar y acompañar el talento matemático de múltiples instituciones.</p>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="pill-badge">Simulacros</span>
+            <span class="pill-badge">Resultados</span>
+            <span class="pill-badge">Mensajería</span>
+            <span class="pill-badge">Biblioteca</span>
+          </div>
+        </div>
+        <div class="col-lg-4 offset-lg-1">
+          <div class="card biffi-card border-0 shadow-lg login-card">
+            <div class="card-body p-4">
+              <div class="login-kicker">Acceso seguro</div>
+              <h2 class="h3 mb-3">Iniciar sesión</h2>
+              <form method="post">
+                <div class="mb-3">
+                  <label class="form-label">Usuario</label>
+                  <input type="text" class="form-control" name="usuario" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Contraseña</label>
+                  <input type="password" class="form-control" name="contrasena" required>
+                </div>
+                <button class="btn btn-biffi w-100">Entrar a la plataforma</button>
+              </form>
+              <div class="demo-access mt-4"></div>
+              <hr>
+              <small class="text-muted d-block">Accesos de prueba</small>
+              <small class="text-muted">`carlos.nunez / admin1234` · `fabiana.ariza / docente123` · `maria.perez / biffi2026`</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

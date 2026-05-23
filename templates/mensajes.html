@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Mensajes | Biffi Olimpiadas{% endblock %}
+{% block content %}
+<section class="row g-4">
+  <div class="col-lg-4">
+    <div class="card biffi-card h-100">
+      <div class="card-body">
+        <h1 class="h4">Nuevo mensaje</h1>
+        <form method="post" class="vstack gap-3">
+          {% if current_user.es_admin() %}
+          <select class="form-select" name="scope">
+            <option value="directo">Destinatario directo</option>
+            <option value="todos">Todos</option>
+            <option value="estudiantes">Solo estudiantes</option>
+            <option value="docentes">Solo docentes</option>
+            <option value="biffi">Solo Biffi</option>
+          </select>
+          {% else %}
+          <input type="hidden" name="scope" value="directo">
+          {% endif %}
+          <select class="form-select" name="para_id">
+            {% for contacto in contactos %}
+            <option value="{{ contacto.id }}">{{ contacto.nombre_completo }} · {{ contacto.rol }}</option>
+            {% endfor %}
+          </select>
+          <input class="form-control" name="asunto" placeholder="Asunto" required>
+          <textarea class="form-control" name="cuerpo" rows="5" placeholder="Escribe tu mensaje..." required></textarea>
+          <button class="btn btn-biffi">Enviar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card biffi-card mb-4">
+      <div class="card-body">
+        <h2 class="h4">Inbox</h2>
+        {% for msg in inbox_msgs %}
+        <div class="message-item {% if not msg.leido %}unread{% endif %}">
+          <div class="d-flex justify-content-between">
+            <strong>{{ msg.asunto }}</strong>
+            <small>{{ msg.enviado_en.strftime('%d/%m %H:%M') }}</small>
+          </div>
+          <div class="small text-muted">De: {{ msg.remitente.nombre_completo }}</div>
+          <p class="mb-2">{{ msg.cuerpo }}</p>
+          <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('mensajes.leer', mensaje_id=msg.id) }}">Marcar leído</a>
+            <a class="btn btn-sm btn-outline-danger" href="{{ url_for('mensajes.eliminar', mensaje_id=msg.id) }}">Eliminar</a>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No tienes mensajes recibidos.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h2 class="h4">Enviados</h2>
+        {% for msg in sent_msgs %}
+        <div class="message-item">
+          <div class="d-flex justify-content-between">
+            <strong>{{ msg.asunto }}</strong>
+            <small>{{ msg.enviado_en.strftime('%d/%m %H:%M') }}</small>
+          </div>
+          <div class="small text-muted">Para: {{ msg.destinatario.nombre_completo }}</div>
+          <p class="mb-0">{{ msg.cuerpo }}</p>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No has enviado mensajes todavía.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

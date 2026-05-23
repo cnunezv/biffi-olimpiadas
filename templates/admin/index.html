@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Admin | Biffi Olimpiadas{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-3">
+    <div class="admin-sidebar">
+      <a href="{{ url_for('admin.index') }}">Dashboard</a>
+      <a href="{{ url_for('admin.usuarios') }}">Usuarios</a>
+      <a href="{{ url_for('admin.instituciones') }}">Instituciones</a>
+      <a href="{{ url_for('admin.secciones') }}">Secciones</a>
+      <a href="{{ url_for('admin.resultados') }}">Resultados</a>
+    </div>
+  </div>
+  <div class="col-lg-9">
+    <h1>Panel administrativo</h1>
+    <div class="row g-3 mb-4">
+      {% for key, value in stats.items() %}
+      <div class="col-md-6 col-xl-3"><div class="metric-card"><span>{{ key|replace('_',' ')|title }}</span><strong>{{ value }}</strong></div></div>
+      {% endfor %}
+    </div>
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h2 class="h4">Últimos resultados</h2>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead><tr><th>Estudiante</th><th>Clave</th><th>Puntaje</th><th>Fecha</th></tr></thead>
+            <tbody>
+              {% for item in ultimos %}
+              <tr>
+                <td>{{ item.usuario.nombre_completo }}</td>
+                <td>{{ item.nivel }}</td>
+                <td>{{ item.puntaje }}/{{ item.total }}</td>
+                <td>{{ item.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

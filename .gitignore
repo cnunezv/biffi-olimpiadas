@@ -1,0 +1,38 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python / Flask
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+instance/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# PHP / local runtime
+vendor/
+.env
+.env.*
+composer.lock
+
+# Uploads and generated local files
+uploads/*
+!uploads/.htaccess
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Duplicated legacy exports / local backups
+biffi-olimpiadas/
+{includes,uploads/
+*.bak
+*.tmp
+
+# XAMPP bridge/runtime helpers
+xampp-flask.log

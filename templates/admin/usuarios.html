@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios | Admin{% endblock %}
+{% block content %}
+<section class="row g-4">
+  <div class="col-lg-4">
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h1 class="h4">Crear usuario</h1>
+        <form method="post" class="vstack gap-3">
+          <input class="form-control" name="nombre" placeholder="Nombre" required>
+          <input class="form-control" name="apellido" placeholder="Apellido" required>
+          <input class="form-control" name="usuario" placeholder="Usuario" required>
+          <input class="form-control" type="email" name="correo" placeholder="Correo" required>
+          <input class="form-control" name="contrasena" placeholder="Contraseña" required>
+          <select class="form-select" name="rol"><option>admin</option><option>docente</option><option selected>estudiante</option></select>
+          <select class="form-select" name="nivel"><option>basico</option><option>medio</option><option>avanzado</option></select>
+          <input class="form-control" type="number" min="4" max="11" name="grado" placeholder="Grado (4-11)">
+          <input class="form-control" name="curso" placeholder="Curso">
+          <select class="form-select" name="institucion_id">{% for inst in instituciones %}<option value="{{ inst.id }}">{{ inst.nombre }}</option>{% endfor %}</select>
+          <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="activo" checked><label class="form-check-label">Activo</label></div>
+          <button class="btn btn-biffi">Guardar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    {% for institucion, usuarios in agrupados.items() %}
+    <div class="card biffi-card mb-3">
+      <div class="card-body">
+        <h2 class="h5">{{ institucion }}</h2>
+        <div class="table-responsive">
+          <table class="table">
+            <thead><tr><th>Nombre</th><th>Rol</th><th>Usuario</th><th>Grado</th></tr></thead>
+            <tbody>
+              {% for usuario in usuarios %}
+              <tr><td>{{ usuario.nombre_completo }}</td><td>{{ usuario.rol }}</td><td>{{ usuario.usuario }}</td><td>{{ usuario.grado or 'N/A' }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

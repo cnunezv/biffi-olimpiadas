@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}{{ tipo|title }} {{ nivel|title }} | Biffi Olimpiadas{% endblock %}
+{% block content %}
+{% if bloqueado %}
+<div class="card biffi-card border-danger">
+  <div class="card-body p-4 p-lg-5">
+    <span class="eyebrow text-danger">Acceso bloqueado</span>
+    <h1>{{ tipo|title }} · {{ nivel|title }}</h1>
+    <p class="lead">{{ bloqueo_mensaje }}</p>
+    <a href="{{ url_for('mensajes.inbox') }}" class="btn btn-danger">Contactar docente</a>
+  </div>
+</div>
+{% elif resultado %}
+<section class="row g-4">
+  <div class="col-lg-4">
+    <div class="card biffi-card h-100">
+      <div class="card-body">
+        <span class="eyebrow">Resultado</span>
+        <h1>{{ resultado.puntaje }}/{{ resultado.total }}</h1>
+        <p class="text-muted">Tiempo registrado: {{ resultado.tiempo_seg }} segundos.</p>
+        {% if ultimo_intento %}
+        <div class="alert alert-danger">Has agotado tus intentos para esta prueba. No aparecerá botón de reintento.</div>
+        {% endif %}
+        {% if not ultimo_intento %}
+        <a href="{{ url_for('simulacro.pruebas') }}" class="btn btn-biffi">Volver a pruebas</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h2 class="h4 mb-3">Revisión detallada</h2>
+        {% for item in resultado.detalle %}
+        <article class="review-item {% if item.es_correcta %}review-ok{% else %}review-bad{% endif %}">
+          <strong>{{ loop.index }}. {{ item.pregunta|safe }}</strong>
+          <div class="small mt-2">
+            <div>Tu respuesta: {{ item.respuesta_usuario or 'Sin responder' }}</div>
+            <div>Correcta: {{ item.respuesta_correcta }}</div>
+            <div>{{ item.explicacion|safe }}</div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% else %}
+<form method="post" id="examForm">
+  <div class="exam-shell mb-4">
+    <div class="exam-sticky">
+      <div>
+        <h1 class="h3 mb-1">{{ tipo|title }} · {{ nivel|title }}</h1>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge badge-type badge-{{ tipo }}">{{ tipo }}</span>
+          <span class="badge text-bg-light">Grupo {{ grupo }}</span>
+          <span class="badge text-bg-dark">Intentos restantes: {{ '∞' if intento_restante == -1 else intento_restante }}</span>
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="timer mono" data-timer data-limit="{{ config.tiempo_limite_min or '' }}">00:00</div>
+        <small class="text-muted">{{ config.tiempo_limite_min ~ ' min' if config.tiempo_limite_min else 'Tiempo libre' }}</small>
+      </div>
+    </div>
+    <div class="progress mt-3">
+      <div class="progress-bar bg-success" role="progressbar" data-progress-bar style="width:0%">0/0</div>
+    </div>
+    <p class="text-muted mt-3 mb-0">{{ config.instrucciones }}</p>
+  </div>
+
+  {% for pregunta in preguntas %}
+  <article class="card biffi-card question-card mb-4">
+    <div class="card-body">
+      <input type="hidden" name="pregunta_ids" value="{{ pregunta.id }}">
+      <div class="d-flex justify-content-between mb-3">
+        <span class="badge text-bg-secondary">Pregunta {{ loop.index }}</span>
+        <span class="badge text-bg-light">{{ pregunta.tema }}</span>
+      </div>
+      <h2 class="h5">{{ pregunta.pregunta|safe }}</h2>
+      {% if pregunta.imagen_url %}
+      <img src="{{ url_for('static', filename=pregunta.imagen_url) }}" class="img-fluid rounded my-3" alt="Pregunta">
+      {% endif %}
+      <div class="row g-3 answer-grid" data-question>
+        {% for key, label in [('op1', pregunta.op1), ('op2', pregunta.op2), ('op3', pregunta.op3), ('op4', pregunta.op4)] %}
+        <div class="col-md-6">
+          <label class="option-card">
+            <input class="form-check-input me-2" type="radio" name="respuesta_{{ pregunta.id }}" value="{{ key }}">
+            <span>{{ label|safe }}</span>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+  <input type="hidden" name="tiempo_seg" value="0" data-time-output>
+  <div class="text-end">
+    <button class="btn btn-biffi btn-lg">Enviar respuestas</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

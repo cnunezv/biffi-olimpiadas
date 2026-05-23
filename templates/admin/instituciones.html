@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Instituciones | Admin{% endblock %}
+{% block content %}
+<section class="row g-4">
+  <div class="col-lg-4">
+    <div class="card biffi-card">
+      <div class="card-body">
+        <h1 class="h4">Nueva institución</h1>
+        <form method="post" class="vstack gap-3">
+          <input class="form-control" name="nombre" placeholder="Nombre" required>
+          <input class="form-control" name="ciudad" placeholder="Ciudad" required>
+          <input class="form-control" name="departamento" placeholder="Departamento" required>
+          <input class="form-control" name="codigo" placeholder="Código" required>
+          <input class="form-control form-control-color" type="color" name="color" value="#7C1F30">
+          <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="activa" checked><label class="form-check-label">Activa</label></div>
+          <button class="btn btn-biffi">Registrar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="row g-3">
+      {% for inst in instituciones %}
+      <div class="col-md-6">
+        <div class="card biffi-card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="h5 mb-0">{{ inst.nombre }}</h2>
+              <span class="color-dot" style="background: {{ inst.color }};"></span>
+            </div>
+            <p class="text-muted mb-1">{{ inst.ciudad }}, {{ inst.departamento }}</p>
+            <small class="text-muted">Código: {{ inst.codigo }}</small>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
