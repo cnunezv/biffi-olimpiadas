@@ -30,4 +30,3 @@ http://localhost/biffi-olimpiadas
 ```text
 carlos.nunez / AdminBiffi2026!
 ```
-
